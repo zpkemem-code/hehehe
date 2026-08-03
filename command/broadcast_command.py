@@ -31,11 +31,9 @@ async def bc_cmd(client, message):
         em.proses
     )
 
-
     command, text = client.extract_type_and_msg(
         message
     )
-
 
     if command not in [
         "group",
@@ -162,63 +160,49 @@ Cancel:
             except ChannelPrivate:
 
                 failed += 1
-                error += (
-                    f"ChannelPrivate {chat_id}\n"
-                )
+                error += f"ChannelPrivate {chat_id}\n"
 
 
             except SlowmodeWait:
 
                 failed += 1
-                error += (
-                    f"Slowmode {chat_id}\n"
-                )
+                error += f"Slowmode {chat_id}\n"
 
 
             except ChatWriteForbidden:
 
                 failed += 1
-                error += (
-                    f"WriteForbidden {chat_id}\n"
-                )
+                error += f"WriteForbidden {chat_id}\n"
 
 
             except Forbidden:
 
                 failed += 1
-                error += (
-                    f"Forbidden {chat_id}\n"
-                )
+                error += f"Forbidden {chat_id}\n"
 
 
             except ChatSendPlainForbidden:
 
                 failed += 1
-                error += (
-                    f"Text forbidden {chat_id}\n"
-                )
+                error += f"Text forbidden {chat_id}\n"
 
 
             except UserBannedInChannel:
 
                 failed += 1
-                error += (
-                    f"Banned {chat_id}\n"
-                )
+                error += f"Banned {chat_id}\n"
 
 
             except PeerIdInvalid:
 
-                error += (
-                    f"Invalid peer {chat_id}\n"
-                )
+                failed += 1
+                error += f"Invalid peer {chat_id}\n"
 
 
             except NotAcceptable:
 
-                error += (
-                    f"Not acceptable {chat_id}\n"
-                )
+                failed += 1
+                error += f"Not acceptable {chat_id}\n"
 
 
             except (
@@ -234,9 +218,7 @@ Cancel:
             except Exception as e:
 
                 failed += 1
-                error += (
-                    f"{chat_id}: {e}\n"
-                )
+                error += f"{chat_id}: {e}\n"
 
 
     finally:
@@ -253,18 +235,16 @@ Cancel:
     # RICH MESSAGE OUTPUT
     # =========================
 
+    from html import escape
 
-    # =========================
-# RICH MESSAGE OUTPUT
-# =========================
+    owner = escape(
+        client.me.first_name
+    )
 
-from html import escape
 
-owner = escape(client.me.first_name)
+    if failed > 0:
 
-if failed > 0:
-
-    html = f"""
+        html = f"""
 <blockquote>
 🩵 <b>Telegram Broadcast Report</b>
 
@@ -289,9 +269,10 @@ to view error details.
 </blockquote>
 """
 
-else:
 
-    html = f"""
+    else:
+
+        html = f"""
 <blockquote>
 🩵 <b>Telegram Broadcast Success</b>
 
@@ -310,6 +291,7 @@ Broadcast has been delivered successfully.
 😈 <b>Messaging apps will never be the same!</b>
 </blockquote>
 """
+
 
     return await client.send_rich_message(
         chat_id=message.chat.id,
