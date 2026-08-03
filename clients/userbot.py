@@ -16,13 +16,18 @@ class UserBot(BaseClient):
     _get_my_peer = {}
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.app_version = "0.0.1.0.0"
-        self.device_model = BOT_NAME
-        self.system_version = "smallubot by @pakveno"
-        self.in_memory = True
-        self.sleep_threshold = 30
-        self.plugins = {"root": "plugins"}
+
+    kwargs["plugins"] = {
+        "root": "plugins"
+    }
+
+    super().__init__(**kwargs)
+
+    self.app_version = "0.0.1.0.0"
+    self.device_model = BOT_NAME
+    self.system_version = "smallubot by @zpcakep"
+    self.in_memory = True
+    self.sleep_threshold = 30
 
     def set_prefix(self, prefix):
         self._prefix[self.me.id] = prefix
