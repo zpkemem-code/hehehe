@@ -48,13 +48,31 @@ def get_size(bytes, suffix="b"):
 
 async def mping_cmd(client, message):
     out, _ = await Tools.bash("ping -c2 157.15.40.61")
-    matches = re.findall(r"time=([\d.]+)\s?ms", out)
-    upnya = await get_time((time() - start_time))
-    ping_result = f"{matches[-1]}"
+
+    matches = re.findall(
+        r"time[=<]([\d.]+)\s*ms",
+        out
+    )
+
+    upnya = await get_time(
+        (time() - start_time)
+    )
+
+    if matches:
+        ping_result = matches[-1]
+    else:
+        ping_result = "Timeout"
+
+
     _ping = "<pre><code>\n"
     _ping += f"Kecepatan: {ping_result} ms\n"
-    _ping += f"Uptime: {upnya}</code></pre>"
-    await message.reply(_ping)
+    _ping += f"Uptime: {upnya}"
+    _ping += "</code></pre>"
+
+    await message.reply(
+        _ping
+    )
+
     return await message.delete()
 
 async def id_cmd(client, message):
