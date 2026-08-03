@@ -73,14 +73,23 @@ async def _(client, callback):
     try:
         query = callback.data
         logger.info(f"Name callback query: {query}")
+
         if query == "create_userbot":
-            return await mari_buat_userbot(client, callback)
+            await callback.answer()
+            return await mari_buat_userbot(
+                client,
+                callback.message
+            )
+
         elif query == "starthome":
             return await start_home_cb(client, callback)
+
         elif query.startswith("use_token") or query.startswith("revoke_token"):
             return await tools_token(client, callback)
+
         elif query == "buttonclose":
             return await closed_bot(client, callback)
+
         elif query == "restart":
             return await restart_userbot(client, callback)
         elif query.startswith("close"):
