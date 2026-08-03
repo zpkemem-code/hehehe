@@ -9,14 +9,19 @@ from command import (tungtoriyal, Resiko_Userbot, support_contact, update_kode_a
                      user_aggre, show_beli_options,
                      handle_confirm_qris, handle_get_qris, handle_cancel_purchase, 
                      handle_kurang_bulan, handle_tambah_bulan, handle_confirm_durasi)
-from helpers import CMD, trigger
+from clients import bot
+from pyrogram_styled import filters
 from logs import logger
 
-
-@CMD.REGEX(trigger)
-async def _(client, message):
+@bot.on_message(
+    filters.regex(
+        r"^(🚀 Buat Userbot 🚀|✨ Pembuatan Ulang Userbot|✅ Lanjutkan Buat Userbot|🚫 Resiko Userbot 🚫|🔙 Kembali 🔙|🏠 Home 🏠|💎 Status 💎|🛒 Beli Userbot 🛒|📥 Backup DB 📥|📂 Cek Users 📂|🌐 Update 🌐|♻️ Restart ♻️|📝 Cara Buat 📝|🔑 Token Login 🔑)$"
+    )
+)
+async def menu_button(client, message):
     try:
         text = message.text
+
         if text in [
             "🚀 Buat Userbot 🚀",
             "✨ Pembuatan Ulang Userbot",
@@ -28,32 +33,42 @@ async def _(client, message):
             return await Resiko_Userbot(client, message)
 
         elif text in [
-        "🔙 Kembali 🔙",
-        "🏠 Home 🏠",
+            "🔙 Kembali 🔙",
+            "🏠 Home 🏠",
         ]:
             return await start_home(client, message)
-            
+
         elif text == "💎 Status 💎":
             return await cek_status_akun(client, message)
+
         elif text == "🛒 Beli Userbot 🛒":
             return await show_beli_options(client, message)
+
         elif text == "📥 Backup DB 📥":
             return await backup(client, message)
+
         elif text == "📂 Cek Users 📂":
             return await send_ubot_1(client, message)
+
         elif text == "🌐 Update 🌐":
             return await update_kode_all(client, message)
+
         elif text == "♻️ Restart ♻️":
             return await restart_userbot(client, message)
+
         elif text == "📝 Cara Buat 📝":
             return await tungtoriyal(client, message)
+
         elif text == "🔑 Token Login 🔑":
             return await token_cmd(client, message)
+
     except Exception as er:
-        logger.error(f"Terjadi error: {str(er)}")
+        logger.error(
+            f"Menu button error: {er}"
+        )
 
 
-@CMD.CALLBACK()
+@bot.on_callback_query()
 async def _(client, callback):
     try:
         query = callback.data
@@ -122,16 +137,3 @@ async def _(client, callback):
             return await handle_cancel_purchase(client, callback)
     except Exception:
         logger.error(f"Callback error: {traceback.format_exc()}")
-
-
-
-
-
-
-
-
-
-
-
-
-
