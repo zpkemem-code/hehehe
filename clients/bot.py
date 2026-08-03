@@ -5,11 +5,13 @@ import traceback
 from datetime import datetime
 from functools import wraps
 
+
 from pyrogram_styled import (
     StopPropagation,
     errors,
     types,
 )
+
 
 from pyrogram_styled.handlers import (
     MessageHandler,
@@ -54,13 +56,12 @@ class Bot(BaseClient):
 
             device_model=BOT_NAME,
 
-            # pyrogram_styled
-            # jangan gunakan auto plugin loader
-            plugins=None,
-
             in_memory=True,
 
-            **kwargs,
+            # penting untuk pyrogram_styled
+            plugins=None,
+
+            **kwargs
         )
 
 
@@ -72,7 +73,6 @@ class Bot(BaseClient):
     ):
 
         def decorator(func):
-
 
             @wraps(func)
             async def wrapper(
@@ -118,8 +118,7 @@ class Bot(BaseClient):
                     errors.MessageIdInvalid,
                 ):
 
-                    pass
-
+                    return
 
 
                 except StopPropagation:
@@ -127,32 +126,12 @@ class Bot(BaseClient):
                     raise
 
 
-
-                except Exception as e:
+                except Exception:
 
 
                     try:
 
-                        error_time = (
-                            datetime.now()
-                            .strftime(
-                                "%Y-%m-%d %H:%M:%S"
-                            )
-                        )
-
-
-                        user_id = (
-                            message.from_user.id
-                            if message.from_user
-                            else "-"
-                        )
-
-
-                        chat_id = (
-                            message.chat.id
-                            if message.chat
-                            else "-"
-                        )
+                        error = traceback.format_exc()
 
 
                         text = (
@@ -162,20 +141,19 @@ class Bot(BaseClient):
                         )
 
 
-                        trace = traceback.format_exc()
-
-
                         report = f"""
 <b>BOT ERROR</b>
 
 <b>Time:</b>
-{error_time}
+{datetime.now()}
+
 
 <b>User:</b>
-{user_id}
+{getattr(message.from_user,'id','-')}
+
 
 <b>Chat:</b>
-{chat_id}
+{getattr(message.chat,'id','-')}
 
 
 <b>Message:</b>
@@ -185,7 +163,7 @@ class Bot(BaseClient):
 
 <b>Traceback:</b>
 
-<pre>{trace}</pre>
+<pre>{error}</pre>
 """
 
 
@@ -195,11 +173,10 @@ class Bot(BaseClient):
                         )
 
 
-                    except Exception as log_error:
-
+                    except Exception as err:
 
                         logger.error(
-                            f"Logger error: {log_error}"
+                            f"Error logger : {err}"
                         )
 
 
@@ -223,15 +200,14 @@ class Bot(BaseClient):
 
 
 
+
     def on_callback_query(
         self,
         filters=None,
         group=0
     ):
 
-
         def decorator(func):
-
 
             self.add_handler(
 
@@ -252,7 +228,8 @@ class Bot(BaseClient):
 
 
 
-    async def load_plugins(self):
+
+    async def _load_plugins(self):
 
 
         for plugin in _PLUGINS:
@@ -280,9 +257,8 @@ class Bot(BaseClient):
                     ] = module
 
 
-
                 logger.info(
-                    f"Plugin loaded: {plugin}"
+                    f"Loaded plugin : {plugin}"
                 )
 
 
@@ -290,8 +266,10 @@ class Bot(BaseClient):
 
 
                 logger.error(
-                    f"Failed load plugin {plugin}: {e}"
+                    f"Plugin {plugin} error : {e}"
                 )
+
+
 
 
 
@@ -307,7 +285,6 @@ class Bot(BaseClient):
 
         for user in SUDO_OWNERS:
 
-
             if user not in sellers:
 
                 await dB.add_to_var(
@@ -317,14 +294,15 @@ class Bot(BaseClient):
                 )
 
 
-        if OWNER_ID not in sellers:
 
+        if OWNER_ID not in sellers:
 
             await dB.add_to_var(
                 BOT_ID,
                 "SELLER",
                 OWNER_ID
             )
+
 
 
         sellers = await dB.get_list_from_var(
@@ -344,17 +322,20 @@ class Bot(BaseClient):
                 )
 
 
+
             if not await dB.get_var(
                 user,
                 "plan"
             ):
-
 
                 await dB.set_var(
                     user,
                     "plan",
                     "is_pro"
                 )
+
+
+
 
 
 
@@ -368,16 +349,15 @@ class Bot(BaseClient):
 
         self.id = self.me.id
 
+        self.username = self.me.username
+
         self.fullname = (
             f"{self.me.first_name} "
             f"{self.me.last_name or ''}"
         )
 
 
-        self.username = self.me.username
-
         self.mention = self.me.mention
-
 
 
 
@@ -385,7 +365,7 @@ class Bot(BaseClient):
 
             types.BotCommand(
                 "start",
-                "Start the bot"
+                "Start bot"
             ),
 
             types.BotCommand(
@@ -395,7 +375,7 @@ class Bot(BaseClient):
 
             types.BotCommand(
                 "request",
-                "Feature request"
+                "Request feature"
             ),
 
             types.BotCommand(
@@ -408,11 +388,8 @@ class Bot(BaseClient):
 
 
         await self.set_bot_commands(
-
             commands,
-
             scope=types.BotCommandScopeAllPrivateChats()
-
         )
 
 
@@ -420,39 +397,38 @@ class Bot(BaseClient):
         if IS_JASA_PRIVATE:
 
 
-            owner_commands = [
-
-                types.BotCommand(
-                    "addprem",
-                    "Berikan akses deploy"
-                ),
-
-                types.BotCommand(
-                    "addseller",
-                    "Tambah seller"
-                ),
-
-                types.BotCommand(
-                    "unseller",
-                    "Hapus seller"
-                ),
-
-                types.BotCommand(
-                    "listseller",
-                    "List seller"
-                ),
-
-                types.BotCommand(
-                    "cekubot",
-                    "Cek userbot"
-                ),
-
-            ]
-
-
             await self.set_bot_commands(
 
-                commands + owner_commands,
+                commands +
+
+                [
+
+                    types.BotCommand(
+                        "addprem",
+                        "Berikan akses deploy"
+                    ),
+
+                    types.BotCommand(
+                        "addseller",
+                        "Tambah seller"
+                    ),
+
+                    types.BotCommand(
+                        "unseller",
+                        "Hapus seller"
+                    ),
+
+                    types.BotCommand(
+                        "listseller",
+                        "List seller"
+                    ),
+
+                    types.BotCommand(
+                        "cekubot",
+                        "Cek userbot"
+                    ),
+
+                ],
 
                 scope=types.BotCommandScopeChat(
                     chat_id=OWNER_ID
@@ -462,7 +438,7 @@ class Bot(BaseClient):
 
 
 
-        await self.load_plugins()
+        await self._load_plugins()
 
 
         await self.add_reseller()
