@@ -33,6 +33,10 @@ async def setExpiredUser(user_id):
 
 
 async def mari_buat_userbot(client, message):
+
+    if hasattr(message, "message"):
+        message = message.message
+
     user_id = message.from_user.id
     
     # CEK APAKAH USER SUDAH PUNYA AKSES (SUDAH BAYAR)
