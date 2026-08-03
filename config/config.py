@@ -42,7 +42,7 @@ API_KEY = os.environ.get("API_KEY", "dp_35ks7liix6")
 BOT_ID = int(BOT_TOKEN.split(":")[0])
 API_MAELYN = os.environ.get("API_MAELYN", "kenapanan")
 
-BOT_NAME = os.environ.get("BOT_NAME", "UserbotSuki")
+BOT_NAME = os.environ.get("BOT_NAME", "debugbot")
 
 DB_NAME = os.environ.get("DB_NAME", "starzp")
 
