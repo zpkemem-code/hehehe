@@ -175,19 +175,19 @@ async def gcast_cmd(client, message):
 
     # Ambil semua group
         # Ambil semua group
-    chats = []
+        chats = []
 
-    peer = client._get_my_peer.get(client.me.id)
+    try:
+        async for dialog in client.get_chats():
+            if dialog.type in [
+                ChatType.GROUP,
+                ChatType.SUPERGROUP
+            ]:
+                chats.append(dialog.id)
 
-    if peer and peer.get("group"):
-        chats = peer["group"]
+    except Exception as e:
+        print(f"SCAN CHAT ERROR: {e}")
 
-    else:
-        try:
-            chats = await client.get_chat_id("group")
-        except Exception as e:
-            print(f"GET GROUP ERROR: {e}")
-            chats = []
 
     print("GCAST TOTAL GROUP:", len(chats))
 
