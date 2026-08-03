@@ -2,8 +2,8 @@ FROM python:3.12-slim
 
 RUN apt-get update -y && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    ffmpeg git fastfetch apt-utils libmediainfo0v5 sqlite3 \
-    libgl1 libglib2.0-0 libxml2-dev libxslt-dev sudo && \
+    ffmpeg git neofetch apt-utils libmediainfo0v5 sqlite3 \
+    libgl1-mesa-glx libglib2.0-0 libxml2-dev libxslt-dev sudo && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -13,10 +13,13 @@ COPY package.txt .
 
 RUN pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir -r package.txt
+    
 
 COPY . .
 
+
 RUN chmod +x start.sh
+
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
