@@ -34,7 +34,7 @@ MAX_BOT = int(os.environ.get("MAX_BOT", 10))
 API_HASH = os.environ.get("API_HASH", "f80a208b8cd4709c30c26ceacae9e1be")
 
 BOT_TOKEN = os.environ.get(
-    "BOT_TOKEN", "8957183252:AAF4Em7_hBMmPAvuKqZwqPI395fUvw_iVZE"
+    "BOT_TOKEN", "7851607018:AAGPbgvNkOaN_lL5a-Haapx7X8C2PE43CCY"
 )
 
 API_KEY = os.environ.get("API_KEY", "dp_35ks7liix6")
