@@ -303,28 +303,50 @@ class BaseClient(
 
         result = []
 
-
-
         try:
-
 
             async for dialog in self.get_dialogs():
 
+                try:
 
-                chat = dialog.chat
+                    chat = dialog.chat
 
-
-                if chat.type in chat_types[query]:
-
-                    result.append(
-                        chat.id
+                    print(
+                        "DIALOG:",
+                        chat.id,
+                        chat.type,
+                        getattr(chat, "title", None)
                     )
 
+                    if chat.type in chat_types[query]:
 
-        except Exception:
+                        result.append(
+                            chat.id
+                        )
 
-            pass
 
+                except Exception as e:
+
+                    print(
+                        "SKIP DIALOG ERROR:",
+                        e
+                    )
+
+                    continue
+
+
+        except Exception as e:
+
+            print(
+                "GET DIALOG ERROR:",
+                e
+            )
+
+
+        print(
+            "TOTAL RESULT:",
+            len(result)
+        )
 
 
         return result
