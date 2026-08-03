@@ -52,7 +52,7 @@ async def add_prem_user(client, message):
     await bot.send_message(
         LOG_SELLER, f"<b>User: {target1} gives access to: {target2}, plan basic</b>"
     )
-    await bot.send_message(-1002465903783, f"**{target1}, Has provided as much access: {acc_acount}**")
+    await bot.send_message(-1003972001873, f"**{target1}, Has provided as much access: {acc_acount}**")
     try:
         return await bot.send_message(
             get_id,
