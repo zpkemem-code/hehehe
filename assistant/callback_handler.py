@@ -15,10 +15,12 @@ from logs import logger
 
 @bot.on_message(
     filters.regex(
-        r"^(🚀 Buat Userbot 🚀|✨ Pembuatan Ulang Userbot|✅ Lanjutkan Buat Userbot|🚫 Resiko Userbot 🚫|🔙 Kembali 🔙|🏠 Home 🏠|💎 Status 💎|🛒 Beli Userbot 🛒|📥 Backup DB 📥|📂 Cek Users 📂|🌐 Update 🌐|♻️ Restart ♻️|📝 Cara Buat 📝|🔑 Token Login 🔑)$"
+        r"^(🚀 Buat Userbot 🚀|✨ Pembuatan Ulang Userbot|✅ Lanjutkan Buat Userbot)$"
     )
 )
 async def menu_button(client, message):
+    logger.info(f"MENU TEXT MASUK: {message.text}")
+
     try:
         text = message.text
 
