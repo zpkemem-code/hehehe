@@ -273,19 +273,26 @@ async def start_home_cb(client, callback):
 
 # TAMBAHKAN INI
 
-from helpers.commands import CMD
+from clients import bot
+from pyrogram_styled import filters
 
 
-@CMD.BOT("start")
+@bot.on_message(
+    filters.command("start")
+)
 async def start_cmd(client, message):
     return await start_home(client, message)
 
 
-@CMD.BOT("bug")
+@bot.on_message(
+    filters.command("bug")
+)
 async def bug_cmd(client, message):
     return await lapor_bug(client, message)
 
 
-@CMD.BOT("request")
+@bot.on_message(
+    filters.command("request")
+)
 async def request_cmd(client, message):
     return await request_bot(client, message)
