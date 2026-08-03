@@ -15,12 +15,10 @@ from logs import logger
 
 @bot.on_message(
     filters.regex(
-        r"^(🚀 Buat Userbot 🚀|✨ Pembuatan Ulang Userbot|✅ Lanjutkan Buat Userbot)$"
+        r"^(🚀 Buat Userbot 🚀|✨ Pembuatan Ulang Userbot|✅ Lanjutkan Buat Userbot|🚫 Resiko Userbot 🚫|🔙 Kembali 🔙|🏠 Home 🏠|💎 Status 💎|🛒 Beli Userbot 🛒|📥 Backup DB 📥|📂 Cek Users 📂|🌐 Update 🌐|♻️ Restart ♻️|📝 Cara Buat 📝|🔑 Token Login 🔑)$"
     )
 )
 async def menu_button(client, message):
-    logger.info(f"MENU TEXT MASUK: {message.text}")
-
     try:
         text = message.text
 
@@ -73,27 +71,16 @@ async def menu_button(client, message):
 @bot.on_callback_query()
 async def _(client, callback):
     try:
-        logger.info("CALLBACK MASUK")
-
         query = callback.data
         logger.info(f"Name callback query: {query}")
-
         if query == "create_userbot":
-            await callback.answer()
-            return await mari_buat_userbot(
-                client,
-                callback.message
-            )
-
+            return await mari_buat_userbot(client, callback)
         elif query == "starthome":
             return await start_home_cb(client, callback)
-
         elif query.startswith("use_token") or query.startswith("revoke_token"):
             return await tools_token(client, callback)
-
         elif query == "buttonclose":
             return await closed_bot(client, callback)
-
         elif query == "restart":
             return await restart_userbot(client, callback)
         elif query.startswith("close"):
