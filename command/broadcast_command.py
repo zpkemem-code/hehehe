@@ -254,174 +254,70 @@ Cancel:
     # =========================
 
 
-    if failed > 0:
+    # =========================
+# RICH MESSAGE OUTPUT
+# =========================
 
+from html import escape
 
-        error_dir = "storage/cache"
+owner = escape(client.me.first_name)
 
+if failed > 0:
 
-        if not os.path.exists(
-            error_dir
-        ):
-
-            os.makedirs(
-                error_dir
-            )
-
-
-        with open(
-            f"{error_dir}/{client.me.id}_errors.txt",
-            "w"
-        ) as f:
-
-            f.write(
-                error
-            )
-
-
-
-        html = f"""
-<h3 align="center">
-📢 Broadcast Report
-</h3>
-
-
-<table bordered="true" striped="true">
-
-<tr align="center">
-<th>Informasi</th>
-<th>Detail</th>
-</tr>
-
-
-<tr align="center">
-<td><b>✅ Success</b></td>
-<td><code>{done}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>❌ Failed</b></td>
-<td><code>{failed}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>💬 Type</b></td>
-<td><code>{command}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>🤖 Task ID</b></td>
-<td><code>#{task_id}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>👤 Owner</b></td>
-<td><code>{client.me.first_name}</code></td>
-</tr>
-
-
-</table>
-
-
+    html = f"""
 <blockquote>
+🩵 <b>Telegram Broadcast Report</b>
 
-<b>📊 Broadcast Summary</b>
+Broadcast has finished with some errors.
 
-<br/>
+📊 <b>Dashboard</b>
 
-Broadcast selesai dengan beberapa error.
+✅ <b>Success:</b> <code>{done}</code>
+❌ <b>Failed:</b> <code>{failed}</code>
+💬 <b>Type:</b> <code>{command}</code>
+🤖 <b>Task ID:</b> <code>#{task_id}</code>
+👤 <b>Owner:</b> <code>{owner}</code>
 
-<br/><br/>
+⚠️ <i>Some messages could not be delivered.</i>
 
-Gunakan:
-
+Use:
 <code>{prefix[0]}bc-error</code>
 
-untuk melihat detail.
+to view error details.
 
+😈 <b>Messaging apps will never be the same!</b>
 </blockquote>
-
-
-<b>⚠️ Task Completed With Error</b>
 """
 
+else:
 
-    else:
-
-
-        html = f"""
-<h3 align="center">
-🚀 Broadcast Success
-</h3>
-
-
-<table bordered="true" striped="true">
-
-
-<tr align="center">
-<th>Informasi</th>
-<th>Detail</th>
-</tr>
-
-
-<tr align="center">
-<td><b>✅ Success</b></td>
-<td><code>{done}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>❌ Failed</b></td>
-<td><code>{failed}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>💬 Type</b></td>
-<td><code>{command}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>🤖 Task ID</b></td>
-<td><code>#{task_id}</code></td>
-</tr>
-
-
-<tr align="center">
-<td><b>👤 Owner</b></td>
-<td><code>{client.me.first_name}</code></td>
-</tr>
-
-
-</table>
-
-
+    html = f"""
 <blockquote>
+🩵 <b>Telegram Broadcast Success</b>
 
-<b>📊 Broadcast Summary</b>
+Broadcast has been delivered successfully.
 
-<br/>
+📊 <b>Dashboard</b>
 
-Broadcast berhasil dikirim ke semua target.
+✅ <b>Success:</b> <code>{done}</code>
+❌ <b>Failed:</b> <code>{failed}</code>
+💬 <b>Type:</b> <code>{command}</code>
+🤖 <b>Task ID:</b> <code>#{task_id}</code>
+👤 <b>Owner:</b> <code>{owner}</code>
 
+🚀 <i>All targets received the message.</i>
+
+😈 <b>Messaging apps will never be the same!</b>
 </blockquote>
-
-
-<b>🎯 Task Completed</b>
 """
 
 
-    return await client.send_rich_message(
-        chat_id=message.chat.id,
-        rich_message=types.InputRichMessage(
-            html=html
-        )
+return await client.send_rich_message(
+    chat_id=message.chat.id,
+    rich_message=types.InputRichMessage(
+        html=html
     )
+)
 
 
 async def gcast_cmd(client, message):
