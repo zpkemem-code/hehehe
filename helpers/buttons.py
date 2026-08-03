@@ -4,8 +4,12 @@ from typing import List, Tuple
 from uuid import uuid4
 
 from pyrogram_styled.errors import QueryIdInvalid, RPCError
-from pyrogram_styled.helpers import ikb, kb
-from pyrogram_styled.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram_styled.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
 from clients import session
 from database import dB, state
@@ -199,21 +203,66 @@ class ButtonUtils:
     """Pre-defined keyboard templates for Pyrogram."""
 
     @staticmethod
-    def start_menu(is_admin: bool = False) -> kb:
-        """Generate start menu keyboard."""
-        if not is_admin:
-            common_buttons = [
-                  ["🚀 Buat Userbot 🚀", "💎 Status 💎"],
-                  ["🔑 Token Login 🔑", "📝 Cara Buat 📝"],
+def start_menu(is_admin: bool = False):
+    """
+    Start menu keyboard untuk pyrogram_styled.
+    Menggunakan ReplyKeyboardMarkup manual agar tidak error
+    icon_custom_emoji_id.
+    """
+
+    if is_admin:
+        keyboard = [
+            [
+                KeyboardButton(
+                    text="🚀 Buat Userbot 🚀"
+                )
+            ],
+            [
+                KeyboardButton(
+                    text="💎 Status 💎"
+                ),
+                KeyboardButton(
+                    text="🌐 Update 🌐"
+                ),
+                KeyboardButton(
+                    text="♻️ Restart ♻️"
+                )
+            ],
+            [
+                KeyboardButton(
+                    text="📂 Cek Users 📂"
+                ),
+                KeyboardButton(
+                    text="📥 Backup DB 📥"
+                )
             ]
-        if is_admin:
-            common_buttons = [
-                  ["🚀 Buat Userbot 🚀"],
-                  ["💎 Status 💎", "🌐 Update 🌐", "♻️ Restart ♻️"],
-                  ["📂 Cek Users 📂", "📥 Backup DB 📥"],
+        ]
+
+    else:
+        keyboard = [
+            [
+                KeyboardButton(
+                    text="🚀 Buat Userbot 🚀"
+                ),
+                KeyboardButton(
+                    text="💎 Status 💎"
+                )
+            ],
+            [
+                KeyboardButton(
+                    text="🔑 Token Login 🔑"
+                ),
+                KeyboardButton(
+                    text="📝 Cara Buat 📝"
+                )
             ]
-            
-        return kb(common_buttons, resize_keyboard=True, one_time_keyboard=True)
+        ]
+
+    return ReplyKeyboardMarkup(
+        keyboard=keyboard,
+        resize_keyboard=True,
+        one_time_keyboard=False
+    )
 
     @staticmethod
     def userbot_list(user_id, count, total_count):
