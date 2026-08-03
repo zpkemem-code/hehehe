@@ -428,7 +428,35 @@ class BaseClient(
         return ""
 
 
+    def get_arg(
+        self,
+        message
+    ):
+        """
+        Mengambil argumen setelah command.
+        Contoh:
+        .help test
 
+        hasil:
+        test
+        """
+
+        text = (
+            message.text
+            or message.caption
+        )
+
+        if not text:
+            return None
+
+        try:
+            return text.split(
+                None,
+                1
+            )[1]
+
+        except IndexError:
+            return None
 
     async def run_cmd(
         self,
