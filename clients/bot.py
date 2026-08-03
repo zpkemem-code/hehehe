@@ -10,6 +10,7 @@ from pyrogram_styled import (
     StopPropagation,
     errors,
     types,
+    filters,
 )
 
 
@@ -453,3 +454,13 @@ class Bot(BaseClient):
 
 
 bot = Bot()
+
+
+@bot.on_message(
+    filters.command("test")
+)
+async def test_command(client, message):
+
+    await message.reply_text(
+        "✅ Pyrogram Styled OK"
+    )
