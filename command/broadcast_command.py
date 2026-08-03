@@ -173,23 +173,25 @@ async def gcast_cmd(client, message):
         f"Type <code>{prefix[0]}cancel {task_id}</code> to cancel!</i>"
     )
 
-    # Ambil semua group
-        # Ambil semua group
-        chats = []
 
+    # =========================
+    # GET GROUP LIST
+    # =========================
     try:
-        async for dialog in client.get_chats():
-            if dialog.type in [
-                ChatType.GROUP,
-                ChatType.SUPERGROUP
-            ]:
-                chats.append(dialog.id)
-
+        chats = await client.get_chat_id("group")
     except Exception as e:
-        print(f"SCAN CHAT ERROR: {e}")
+        chats = []
+        print(f"GET GROUP ERROR: {e}")
 
 
     print("GCAST TOTAL GROUP:", len(chats))
+
+
+    if not chats:
+        await proses.delete()
+        return await message.reply(
+            "<b>Tidak ada group ditemukan.</b>"
+        )
 
 
     blacklist = await dB.get_list_from_var(
@@ -197,12 +199,14 @@ async def gcast_cmd(client, message):
         "BLACKLIST_GCAST"
     )
 
+
     done = 0
     failed = 0
     error = ""
 
 
     try:
+
         for chat_id in chats:
 
             if not task.is_active(task_id):
@@ -220,52 +224,76 @@ async def gcast_cmd(client, message):
 
 
             try:
+
                 if message.reply_to_message:
-                    await message.reply_to_message.copy(chat_id)
+
+                    await message.reply_to_message.copy(
+                        chat_id
+                    )
+
                 else:
+
                     await client.send_message(
                         chat_id,
                         text
                     )
 
+
                 done += 1
 
 
+
             except ChannelPrivate:
+
                 error += f"ChannelPrivate {chat_id}\n"
 
 
+
             except SlowmodeWait:
+
                 failed += 1
                 error += f"Slowmode {chat_id}\n"
 
 
+
             except ChatWriteForbidden:
+
                 failed += 1
                 error += f"ChatWriteForbidden {chat_id}\n"
 
 
+
             except Forbidden:
+
                 failed += 1
                 error += f"Forbidden {chat_id}\n"
 
 
+
             except ChatSendPlainForbidden:
+
                 failed += 1
                 error += f"Cannot send message {chat_id}\n"
 
 
+
             except UserBannedInChannel:
+
                 failed += 1
                 error += f"Banned {chat_id}\n"
 
 
+
             except PeerIdInvalid:
+
                 error += f"Invalid peer {chat_id}\n"
 
 
+
             except NotAcceptable:
+
                 error += f"NotAcceptable {chat_id}\n"
+
 
 
             except (FloodWait, FloodPremiumWait) as e:
@@ -273,9 +301,15 @@ async def gcast_cmd(client, message):
                 await asyncio.sleep(e.value)
 
                 try:
+
                     if message.reply_to_message:
-                        await message.reply_to_message.copy(chat_id)
+
+                        await message.reply_to_message.copy(
+                            chat_id
+                        )
+
                     else:
+
                         await client.send_message(
                             chat_id,
                             text
@@ -283,24 +317,31 @@ async def gcast_cmd(client, message):
 
                     done += 1
 
+
                 except Exception as err:
+
                     failed += 1
                     error += f"{chat_id}: {err}\n"
 
 
+
             except Exception as err:
+
                 failed += 1
                 error += f"{chat_id}: {err}\n"
 
 
 
     finally:
+
         task.end_task(task_id)
         await proses.delete()
 
 
 
-    # simpan error
+    # =========================
+    # SAVE ERROR
+    # =========================
     if error:
 
         error_dir = "storage/cache"
@@ -313,6 +354,7 @@ async def gcast_cmd(client, message):
             f"{error_dir}/{client.me.id}_errors.txt",
             "w"
         ) as f:
+
             f.write(error)
 
 
