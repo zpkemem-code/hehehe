@@ -311,13 +311,12 @@ Broadcast has been delivered successfully.
 </blockquote>
 """
 
-
-return await client.send_rich_message(
-    chat_id=message.chat.id,
-    rich_message=types.InputRichMessage(
-        html=html
+    return await client.send_rich_message(
+        chat_id=message.chat.id,
+        rich_message=types.InputRichMessage(
+            html=html
+        )
     )
-)
 
 
 async def gcast_cmd(client, message):
