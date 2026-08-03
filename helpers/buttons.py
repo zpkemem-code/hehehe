@@ -1,21 +1,16 @@
 import re
-from math import ceil
 from typing import List, Tuple
 from uuid import uuid4
 
-from pyrogram_styled.errors import QueryIdInvalid, RPCError
 from pyrogram_styled.helpers import ikb, kb
 from pyrogram_styled.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    KeyboardButton,
 )
 
-from clients import session
 from database import dB, state
-
-
-COLUMN_SIZE = 4
-NUM_COLUMNS = 2
+from clients import session
 
 
 class EqInlineKeyboardButton(InlineKeyboardButton):
@@ -26,93 +21,8 @@ class EqInlineKeyboardButton(InlineKeyboardButton):
     def __lt__(self, other):
         return self.text < other.text
 
-    def __gt__(self, other):
-        return self.text > other.text
-
-
-
-def paginate_modules(page_n, module_dict, prefix, chat=None):
-
-    buttons = []
-
-    for module in module_dict.values():
-
-        name = module.__MODULES__
-
-        if chat:
-            data = f"{prefix}_module({chat},{name.lower()},{page_n})"
-        else:
-            data = f"{prefix}_module({name.lower()},{page_n})"
-
-        buttons.append(
-            EqInlineKeyboardButton(
-                text=name,
-                callback_data=data
-            )
-        )
-
-
-    buttons = sorted(buttons)
-
-    rows = [
-        buttons[i:i+NUM_COLUMNS]
-        for i in range(
-            0,
-            len(buttons),
-            NUM_COLUMNS
-        )
-    ]
-
-
-    max_page = ceil(len(rows)/COLUMN_SIZE) if rows else 1
-
-    page = page_n % max_page
-
-
-    if len(rows) > COLUMN_SIZE:
-
-        rows = rows[
-            page*COLUMN_SIZE:
-            COLUMN_SIZE*(page+1)
-        ]
-
-        rows.append(
-            [
-                EqInlineKeyboardButton(
-                    text="⬅️",
-                    callback_data=f"{prefix}_prev({page})"
-                ),
-                EqInlineKeyboardButton(
-                    text="❌",
-                    callback_data="buttonclose"
-                ),
-                EqInlineKeyboardButton(
-                    text="➡️",
-                    callback_data=f"{prefix}_next({page})"
-                ),
-            ]
-        )
-
-
-    else:
-
-        rows.append(
-            [
-                EqInlineKeyboardButton(
-                    text="➕ Owner Userbot ➕",
-                    user_id=8333063872
-                )
-            ]
-        )
-
-
-    return rows
-
-
-
 
 class ButtonUtils:
-
 
     URL_PATTERN = re.compile(
         r"(?:https?://)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
@@ -123,10 +33,8 @@ class ButtonUtils:
     )
 
 
-
     @staticmethod
     def is_url(text):
-
         return bool(
             re.search(
                 ButtonUtils.URL_PATTERN,
@@ -136,55 +44,26 @@ class ButtonUtils:
 
 
     @staticmethod
-    def parse_msg_buttons(texts):
-
-        buttons=[]
-
-
-        for text,url in ButtonUtils.BUTTON_PATTERN.findall(texts):
-
-            if "|" in url:
-
-                url=url.split("|")[0]
+    def is_number(text):
+        return text.isdigit()
 
 
-            buttons.append(
-                [
-                    [
-                        text,
-                        url
-                    ]
-                ]
-            )
-
-
-        clean=texts
-
-        for x in re.findall(
-            r"\[.+?\|.+?\]",
-            texts
-        ):
-            clean=clean.replace(
-                x,
-                ""
-            )
-
-
-        return clean.strip(),buttons
-
+    @staticmethod
+    def is_copy(text):
+        return text.startswith("copy:")
 
 
     @staticmethod
     async def create_button(
         text,
         data,
-        with_suffix=""
+        suffix=""
     ):
 
+        data = str(data).strip()
 
-        data=data.strip()
 
-
+        # URL
         if ButtonUtils.is_url(data):
 
             return InlineKeyboardButton(
@@ -193,7 +72,8 @@ class ButtonUtils:
             )
 
 
-        if data.isdigit():
+        # USER ID
+        if ButtonUtils.is_number(data):
 
             return InlineKeyboardButton(
                 text=text,
@@ -201,7 +81,8 @@ class ButtonUtils:
             )
 
 
-        if data.startswith("copy:"):
+        # COPY TEXT
+        if ButtonUtils.is_copy(data):
 
             return InlineKeyboardButton(
                 text=text,
@@ -212,39 +93,52 @@ class ButtonUtils:
             )
 
 
-        return InlineKeyboardButton(
-            text=text,
-            callback_data=data
+        # CALLBACK
+
+        callback = (
+            f"{data}_{suffix}"
+            if suffix
+            else data
         )
 
 
+        return InlineKeyboardButton(
+            text=text,
+            callback_data=callback
+        )
+
 
     @staticmethod
-    async def create_inline_keyboard(buttons,suffix=""):
+    async def create_inline_keyboard(
+        buttons: List[List],
+        suffix=""
+    ):
 
-        result=[]
+        keyboard = []
 
 
         for row in buttons:
 
-            temp=[]
+            keyboard_row = []
 
-            for text,data in row:
+            for text, data in row:
 
-                temp.append(
-                    await ButtonUtils.create_button(
-                        text,
-                        data,
-                        suffix
-                    )
+                button = await ButtonUtils.create_button(
+                    text,
+                    data,
+                    suffix
                 )
 
+                keyboard_row.append(button)
 
-            result.append(temp)
+
+            keyboard.append(
+                keyboard_row
+            )
 
 
         return InlineKeyboardMarkup(
-            inline_keyboard=result
+            inline_keyboard=keyboard
         )
 
 
@@ -257,7 +151,7 @@ class ButtonUtils:
 
         if is_admin:
 
-            menu=[
+            menu = [
 
                 [
                     "🚀 Buat Userbot 🚀"
@@ -272,13 +166,14 @@ class ButtonUtils:
                 [
                     "📂 Cek Users 📂",
                     "📥 Backup DB 📥"
-                ],
+                ]
 
             ]
 
+
         else:
 
-            menu=[
+            menu = [
 
                 [
                     "🚀 Buat Userbot 🚀",
@@ -302,40 +197,39 @@ class ButtonUtils:
 
 
     @staticmethod
-    def account_list(start_index=0):
+    def account_list(
+        start_index=0
+    ):
 
-        users=session.get_list()
+        users = session.get_list()
 
-        keyboard=[]
+        buttons = []
 
 
-        row=[]
+        row = []
 
-        for i,user_id in enumerate(
-            users[start_index:start_index+20],
-            start=start_index
-        ):
+
+        for index,user_id in enumerate(users[start_index:start_index+20]):
 
             row.append(
                 InlineKeyboardButton(
-                    text=str(i+1),
-                    callback_data=f"tools_acc {user_id}-{i}"
+                    text=str(index+1),
+                    callback_data=f"tools_acc {user_id}-{index}"
                 )
             )
 
 
             if len(row)==5:
 
-                keyboard.append(row)
+                buttons.append(row)
                 row=[]
 
 
         if row:
-            keyboard.append(row)
+            buttons.append(row)
 
 
-
-        keyboard.append(
+        buttons.append(
             [
                 InlineKeyboardButton(
                     text="❌ Tutup",
@@ -346,5 +240,53 @@ class ButtonUtils:
 
 
         return InlineKeyboardMarkup(
-            inline_keyboard=keyboard
+            inline_keyboard=buttons
+        )
+
+
+
+    @staticmethod
+    def build_buttons(
+        data,
+        uniq,
+        callback,
+        closed
+    ):
+
+        buttons=[]
+        row=[]
+
+
+        for idx,_ in enumerate(data):
+
+            row.append(
+                InlineKeyboardButton(
+                    text=str(idx+1),
+                    callback_data=f"{callback}{idx}_{uniq}"
+                )
+            )
+
+
+            if len(row)==5:
+
+                buttons.append(row)
+                row=[]
+
+
+        if row:
+            buttons.append(row)
+
+
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="❌ Close",
+                    callback_data=f"close {closed} {uniq}"
+                )
+            ]
+        )
+
+
+        return InlineKeyboardMarkup(
+            inline_keyboard=buttons
         )
