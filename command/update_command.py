@@ -11,6 +11,7 @@ from time import perf_counter
 from typing import Any, Dict
 from uuid import uuid4
 
+import pyrogram
 import pyrogram_styled
 import pyrogram_styled.enums
 import pyrogram_styled.errors
