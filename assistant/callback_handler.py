@@ -71,6 +71,8 @@ async def menu_button(client, message):
 @bot.on_callback_query()
 async def _(client, callback):
     try:
+        logger.info("CALLBACK MASUK")
+
         query = callback.data
         logger.info(f"Name callback query: {query}")
 
