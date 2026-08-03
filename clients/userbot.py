@@ -45,6 +45,78 @@ class UserBot(BaseClient):
         )
 
 
+    async def extract_user_and_reason(self, message):
+
+        user_id = None
+        bulan = 1
+
+        args = getattr(
+            message,
+            "command",
+            []
+        )[1:]
+
+
+        # ambil user dari reply
+        if message.reply_to_message:
+
+            if message.reply_to_message.from_user:
+
+                user_id = (
+                    message.reply_to_message
+                    .from_user
+                    .id
+                )
+
+
+        # ambil user dari argument
+        elif args:
+
+            target = args[0]
+
+
+            try:
+
+                user_id = int(target)
+
+
+            except ValueError:
+
+                try:
+
+                    user = await self.get_users(
+                        target
+                    )
+
+                    user_id = user.id
+
+
+                except Exception:
+
+                    user_id = None
+
+
+            args = args[1:]
+
+
+        # ambil jumlah bulan premium
+        if args:
+
+            try:
+
+                bulan = int(
+                    args[0]
+                )
+
+            except ValueError:
+
+                bulan = 1
+
+
+        return user_id, bulan
+
+
+
     def on_message(self, filters=None, group=-1):
 
         def decorator(func):
@@ -60,6 +132,7 @@ class UserBot(BaseClient):
         return decorator
 
 
+
     def on_edited_message(self, filters=None, group=-1):
 
         def decorator(func):
@@ -73,6 +146,7 @@ class UserBot(BaseClient):
             return func
 
         return decorator
+
 
 
     def user_prefix(self, cmd):
@@ -98,6 +172,7 @@ class UserBot(BaseClient):
 
             username = client.me.username or ""
 
+
             prefixes = self.get_prefix(
                 client.me.id
             )
@@ -109,7 +184,9 @@ class UserBot(BaseClient):
                     continue
 
 
-                without_prefix = text[len(prefix):]
+                without_prefix = (
+                    text[len(prefix):]
+                )
 
 
                 for command in cmd.split("|"):
@@ -127,7 +204,6 @@ class UserBot(BaseClient):
                         flags=re.IGNORECASE | re.UNICODE
                     ):
                         continue
-
 
 
                     without_command = re.sub(
@@ -193,11 +269,9 @@ class UserBot(BaseClient):
         await super().start()
 
 
-        # load command dulu
         self.load_plugins()
 
 
-        # baru pasang handler
         HandlerRegistry.apply_handlers(
             self
         )
@@ -229,11 +303,13 @@ class UserBot(BaseClient):
         )
 
 
+
     async def stop(self, *args, **kwargs):
 
         session.remove_session(
             self.me.id
         )
+
 
         await super().stop(
             *args,
