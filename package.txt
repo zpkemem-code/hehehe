@@ -26,5 +26,5 @@ aioshutil
 tgcrypto-pyrofork
 qrcode
 cloudscraper25
-git+https://github.com/navycodes/pyro.git@styled
+git+https://github.com/zpkemem-code/pyro.git@styled
 hydrogram
