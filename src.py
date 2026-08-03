@@ -67,7 +67,7 @@ async def start_ubot(ubot):
 
 
 async def start_main_bot():
-    """Start the main bot after userbots."""
+    import assistant.callback_handler
     logger.info("🚀 Starting main bot...")
     await bot.start()
     await bot.add_reseller()
