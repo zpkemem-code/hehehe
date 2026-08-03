@@ -155,129 +155,182 @@ async def bc_cmd(client, message):
 async def gcast_cmd(client, message):
     em = Emoji(client)
     await em.get()
+
     proses = await animate_proses(message, em.proses)
 
     text = client.get_message(message)
 
     if not text:
         return await proses.edit(
-            f"<code>{message.text.split()[0]}</code> <b>text or give text</b>"
+            f"<code>{message.text.split()[0]}</code> <b>text or reply message</b>"
         )
+
     task_id = task.start_task()
     prefix = client.get_prefix(client.me.id)
-    await proses.edit(
-        f"<i>Task {message.command[0]} running #<code>{task_id}</code>. "
-        f"Type <code>{prefix[0]}cancel {task_id}</code> to cancel {message.command[0]}!</i>"
-    )
-    peer = client._get_my_peer.get(client.me.id)
-    if not peer:
-        chats = await client.get_chat_id("group")
-    else:
-        if len(peer.get("group", [])) != 0:
-            chats = peer["group"]
-        else:
-            chats = await client.get_chat_id("group")
-    blacklist = await dB.get_list_from_var(client.me.id, "BLACKLIST_GCAST")
-    done, failed = 0, 0
-    error = f"**Error failed broadcast:**\n"
-    try:
 
+    await proses.edit(
+        f"<i>Task {message.command[0]} running #<code>{task_id}</code>.\n"
+        f"Type <code>{prefix[0]}cancel {task_id}</code> to cancel!</i>"
+    )
+
+    # Ambil semua group
+    chats = []
+
+    peer = client._get_my_peer.get(client.me.id)
+
+    if peer and peer.get("group"):
+        chats = peer["group"]
+    else:
+        async for dialog in client.get_dialogs():
+            chat = dialog.chat
+
+            if chat.type in [
+                ChatType.GROUP,
+                ChatType.SUPERGROUP
+            ]:
+                chats.append(chat.id)
+
+
+    blacklist = await dB.get_list_from_var(
+        client.me.id,
+        "BLACKLIST_GCAST"
+    )
+
+    done = 0
+    failed = 0
+    error = ""
+
+
+    try:
         for chat_id in chats:
+
             if not task.is_active(task_id):
-                return await proses.edit(f"{message.command[0]} cancelled.")
-            if chat_id in blacklist or chat_id in BLACKLIST_GCAST or chat_id in DEVS:
-                continue
-            try:
-                await (
-                    text.copy(chat_id)
-                    if message.reply_to_message
-                    else client.send_message(chat_id, text)
+                return await proses.edit(
+                    "Broadcast cancelled."
                 )
-                done += 1
-            except ChannelPrivate:
-                error += f"ChannelPrivate or channel private {chat_id}\n"
+
+
+            if (
+                chat_id in blacklist
+                or chat_id in BLACKLIST_GCAST
+                or chat_id in DEVS
+            ):
                 continue
+
+
+            try:
+                if message.reply_to_message:
+                    await message.reply_to_message.copy(chat_id)
+                else:
+                    await client.send_message(
+                        chat_id,
+                        text
+                    )
+
+                done += 1
+
+
+            except ChannelPrivate:
+                error += f"ChannelPrivate {chat_id}\n"
+
 
             except SlowmodeWait:
-                error += f"SlowmodeWait or gc di timer {chat_id}\n"
                 failed += 1
-                continue
+                error += f"Slowmode {chat_id}\n"
+
 
             except ChatWriteForbidden:
-                error += f"ChatWriteForbidden or lu dimute {chat_id}\n"
                 failed += 1
-                continue
+                error += f"ChatWriteForbidden {chat_id}\n"
+
 
             except Forbidden:
-                error += f"Forbidden or antispam grup aktif {chat_id}\n"
                 failed += 1
-                continue
+                error += f"Forbidden {chat_id}\n"
+
 
             except ChatSendPlainForbidden:
-                error += f"ChatSendPlainForbidden or ga bisa kirim teks {chat_id}\n"
                 failed += 1
-                continue
+                error += f"Cannot send message {chat_id}\n"
+
 
             except UserBannedInChannel:
-                error += f"UserBannedInChannel or lu limit {chat_id}\n"
                 failed += 1
-                continue
+                error += f"Banned {chat_id}\n"
+
 
             except PeerIdInvalid:
-                error += f"PeerIdInvalid or lu bukan pengguna grup ini {chat_id}\n"
-                continue
+                error += f"Invalid peer {chat_id}\n"
+
+
             except NotAcceptable:
-                error += f"Grup kontol kirim pesan suruh bayar {chat_id}\n"
-                continue
+                error += f"NotAcceptable {chat_id}\n"
+
 
             except (FloodWait, FloodPremiumWait) as e:
+
                 await asyncio.sleep(e.value)
+
                 try:
-                    await (
-                        text.copy(chat_id)
-                        if message.reply_to_message
-                        else client.send_message(chat_id, text)
-                    )
-                except Exception:
+                    if message.reply_to_message:
+                        await message.reply_to_message.copy(chat_id)
+                    else:
+                        await client.send_message(
+                            chat_id,
+                            text
+                        )
+
+                    done += 1
+
+                except Exception as err:
                     failed += 1
-                    continue
-                except SlowmodeWait:
-                    failed += 1
-                    error += f"Grup timer {chat_id}\n"
-                    continue
+                    error += f"{chat_id}: {err}\n"
+
 
             except Exception as err:
                 failed += 1
-                error += f"{str(err)}\n"
-                continue
+                error += f"{chat_id}: {err}\n"
+
+
+
     finally:
         task.end_task(task_id)
         await proses.delete()
+
+
+
+    # simpan error
     if error:
+
         error_dir = "storage/cache"
+
         if not os.path.exists(error_dir):
             os.makedirs(error_dir)
-        with open(f"{error_dir}/{client.me.id}_errors.txt", "w") as error_file:
-            error_file.write(error)
-        return await message.reply(
-            f"""
-<blockquote expandable><b> Broadcast group</b>
-<b>Success: {done}</b>
-<b>Failed: {failed}</b>
-<b>Type: {message.command[0]}</b>
-<b>Task ID: `{task_id}`</b>
 
-<b>Type <code>{prefix[0]}bc-error</code> to view failed in broadcast.</b></blockquote>"""
-        )
-    else:
-        return await message.reply(
-            f"""
-<blockquote expandable><b> Broadcast group</b>
-<b>Success: {done}</b>
-<b>Failed: {failed}</b>
-<b>Type: {message.command[0]}</b>
-<b>Task ID: `{task_id}`</b></blockquote>"""
-        )
+
+        with open(
+            f"{error_dir}/{client.me.id}_errors.txt",
+            "w"
+        ) as f:
+            f.write(error)
+
+
+
+    return await message.reply(
+        f"""
+<blockquote expandable>
+<b>Broadcast Group</b>
+
+<b>Success:</b> {done}
+<b>Failed:</b> {failed}
+<b>Total Group:</b> {len(chats)}
+<b>Type:</b> {message.command[0]}
+<b>Task ID:</b> <code>{task_id}</code>
+
+{"<b>Error log:</b> ketik <code>"+prefix[0]+"bc-error</code>" if error else ""}
+</blockquote>
+"""
+    )
 
 
 async def ucast_cmd(client, message):
