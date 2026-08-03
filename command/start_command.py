@@ -246,13 +246,24 @@ async def outgoing_reply(client, message):
 async def start_home_cb(client, callback):
     broadcast = await dB.get_list_from_var(client.me.id, "BROADCAST")
     user = callback.from_user
+
     if user.id not in broadcast:
-        await dB.add_to_var(client.me.id, "BROADCAST", user.id)
+        await dB.add_to_var(
+            client.me.id,
+            "BROADCAST",
+            user.id
+        )
+
     if callback.from_user.id in SUDO_OWNERS:
         buttons = ButtonUtils.start_menu(is_admin=True)
     else:
         buttons = ButtonUtils.start_menu(is_admin=False)
-    text = await Message.welcome_message(client, callback.message)
+
+    text = await Message.welcome_message(
+        client,
+        callback.message
+    )
+
     return await callback.edit_message_text(
         text=text,
         reply_markup=buttons,
@@ -260,11 +271,21 @@ async def start_home_cb(client, callback):
     )
 
 
+# TAMBAHKAN INI
+
+from helpers.commands import CMD
 
 
+@CMD.BOT("start")
+async def start_cmd(client, message):
+    return await start_home(client, message)
 
 
+@CMD.BOT("bug")
+async def bug_cmd(client, message):
+    return await lapor_bug(client, message)
 
 
-
-
+@CMD.BOT("request")
+async def request_cmd(client, message):
+    return await request_bot(client, message)
