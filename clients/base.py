@@ -11,7 +11,7 @@ from database import dB
 list_error = []
 
 
-class BaseClient(SendRichMessage, Client):
+class BaseClient(Client):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
